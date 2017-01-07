@@ -71,7 +71,6 @@ Definition tsl_conv M N : S.Betac M N -> M ᵗ ≡ N ᵗ.
   induction 1; eauto 2. constructor.
   induction H; eauto.
 Defined.
-Hint Resolve tsl_conv.
 
 Lemma Bool_s Γ s : Γ ⊣ -> Γ ⊢ Bool : !s.
   intro. destruct s; now constructor.
@@ -94,6 +93,11 @@ Proof.
     econstructor. eassumption. assumption.
   - intros Γ A P t1 u t2 p s t H t0 H0 t3 H1. rewrite tsl_subst.
     rewrite tsl_subst in H0. econstructor; eassumption.
+  - intros. apply tsl_conv in b.
+    eapply Cnv.
+    + exact b.
+    + exact H.
+    + exact H0.
 Defined.
 
 (* Print Assumptions tsl_correction. *)
