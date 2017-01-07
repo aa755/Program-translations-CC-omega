@@ -200,6 +200,9 @@ Notation "A ⇒ B" := (Π A (B ↑)) (at level 20, right associativity).
 Definition empty := Π !(U 0) #0.
 Notation "⊥" := empty.
 
+Locate "!".
+Print Sort.
+
 Inductive wf : Env -> Prop :=
 | wf_nil   : nil ⊣
 | wf_cons : forall Γ A s, Γ ⊢ A : !s -> A::Γ ⊣
@@ -225,6 +228,7 @@ typ : Env -> Term -> Term -> Prop :=
 | crefle : forall Γ t A, Γ ⊢ t : A -> Γ ⊢ refle t : Eq A t t
 | cJ : forall Γ A P t1 u t2 p s, A :: Γ ⊢ P : !s -> Γ ⊢ u : P[←t1] -> Γ ⊢ p : Eq A t1 t2
                                 -> Γ ⊢ J A P t1 u t2 p : P[←t2]
+(* this is the only place in the typesystem where computation is mentioned? *)
 | Cnv   : forall Γ M A B s, A ≡ B  -> Γ ⊢ M : A -> Γ ⊢ B : !s -> Γ ⊢ M : B
 where "Γ ⊢ t : T" := (typ Γ t T) : UT_scope.
 

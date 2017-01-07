@@ -4,6 +4,7 @@ Require Import Compare_dec.
 Require Import Lt Le Gt.
 Require Import Sorts. Import withoutProp.
 
+
 (** * Term definition for PTS and de Bruijn manipulation . *)
 (** * Usual Term syntax .*)
 
@@ -159,6 +160,8 @@ Reserved Notation "Γ ⊣ " (at level 80, no associativity).
 Notation "A ⇒ B" := (Π A (B ↑)) (at level 20, right associativity).
 Definition empty := Π !(U 0) #0.
 Notation "⊥" := empty.
+
+Print Env.
 
 Inductive wf : Env -> Prop :=
 | wf_nil   : nil ⊣
