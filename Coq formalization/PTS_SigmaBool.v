@@ -134,63 +134,6 @@ Notation " t ↓ n ⊂ Γ " := (item_lift t Γ n) (at level 80, no associativity
  *)
 Reserved Notation " A → B " (at level 80).
 
-Inductive Beta : Term -> Term -> Prop :=
-| Beta_head  : forall A M N, (λ A M) · N → M [← N]
-| Beta_eq    : forall A P M N, J A P M N M (refle M) → N
-| Beta_prod1 : forall M N, π1 ⟨M, N⟩ → M
-| Beta_prod2 : forall M N, π2 ⟨M, N⟩ → N
-| Beta_prod_eta : forall M, ⟨π1 M, π2 M⟩ → M
-| Beta_Bool1 : forall A M N , If A true M N → M
-| Beta_Bool2 : forall A M N , If A false M N → N
-(* Congruence rules *)
-| Beta_Π1    : forall A A' B , A → A' -> Π A B → Π A' B
-| Beta_Π2    : forall A B  B', B → B' -> Π A B → Π A  B'
-| Beta_λ1    : forall A A' M , A → A' -> λ A M → λ A' M
-| Beta_λ2    : forall A M  M', M → M' -> λ A M → λ A  M'
-| Beta_App1  : forall M M' N , M → M' -> M · N  → M' · N
-| Beta_App2  : forall M N  N', N → N' -> M · N  → M · N'
-| Beta_Eq1   : forall A A' M N, A → A' -> Eq A M N → Eq A' M N
-| Beta_Eq2   : forall A M M' N, M → M' -> Eq A M N → Eq A M' N
-| Beta_Eq3   : forall A M N N', N → N' -> Eq A M N → Eq A M N'
-| Beta_refle : forall M M' , M → M' -> refle M  → refle M'
-| Beta_J1     : forall A A' P M1 N M2 p, A → A' -> J A P M1 N M2 p → J A' P M1 N M2 p
-| Beta_J2     : forall A P P' M1 N M2 p, P → P' -> J A P M1 N M2 p → J A P' M1 N M2 p
-| Beta_J3     : forall A P M1 M1' N M2 p, M1 → M1' -> J A P M1 N M2 p → J A P M1' N M2 p
-| Beta_J4     : forall A P M1 N N' M2 p, N → N' -> J A P M1 N M2 p → J A P M1 N' M2 p
-| Beta_J5     : forall A P M1 N M2 M2' p, M2 → M2' -> J A P M1 N M2 p → J A P M1 N M2' p
-| Beta_J6     : forall A P M1 N M2 p p', p → p' -> J A P M1 N M2 p → J A P M1 N M2 p'
-| Beta_Σ1    : forall A A' B , A → A' -> Σ A B → Σ A' B
-| Beta_Σ2    : forall A B  B', B → B' -> Σ A B → Σ A  B'
-| Beta_Pair1 : forall M M' N, M → M' -> ⟨ M , N ⟩  → ⟨ M' , N ⟩
-| Beta_Pair2 : forall M N N', N → N' -> ⟨ M , N ⟩  → ⟨ M , N' ⟩
-| Beta_π1    : forall M M', M → M' -> π1 M  → π1 M'
-| Beta_π2    : forall M M', M → M' -> π2 M  → π2 M'
-| Beta_If1   : forall A A' b M N, A → A' -> If A b M N → If A' b M N
-| Beta_If2   : forall A b b' M N, b → b' -> If A b M N → If A b' M N
-| Beta_If3   : forall A b M M' N, M → M' -> If A b M N → If A b M' N
-| Beta_If4   : forall A b M N N', N → N' -> If A b M N → If A b M N'
-where "M → N" := (Beta M N) : UT_scope.
-  
-Reserved Notation " A →→ B " (at level 80).
-
-Inductive Betas : Term -> Term -> Prop :=
-| Betas_refl  : forall M    , M →→ M
-| Betas_Beta  : forall M N  , M → N  -> M →→ N
-| Betas_trans : forall M N P, M →→ N -> N →→ P -> M →→ P
-where  " A →→ B " := (Betas A B) : UT_scope.
-
-Reserved Notation " A ≡ B " (at level 80).
-
-Inductive Betac : Term -> Term -> Prop :=
-| Betac_Betas : forall M N  , M →→ N -> M ≡ N
-| Betac_sym   : forall M N  , M ≡ N  -> N ≡ M
-| Betac_trans : forall M N P, M ≡ N  -> N ≡ P -> M ≡ P
-where " A ≡ B " := (Betac A B)  : UT_scope.
-
-Hint Constructors Beta.
-Hint Constructors Betas.
-Hint Constructors Betac.
-
 
 (** Typing judgements:*)
 Reserved Notation "Γ ⊢ t : T" (at level 80, t, T at level 30, no associativity) .
@@ -202,6 +145,8 @@ Notation "⊥" := empty.
 
 Locate "!".
 Print Sort.
+
+Axiom Betac : Term -> Term -> Prop.
 
 Inductive wf : Env -> Prop :=
 | wf_nil   : nil ⊣
@@ -229,7 +174,7 @@ typ : Env -> Term -> Term -> Prop :=
 | cJ : forall Γ A P t1 u t2 p s, A :: Γ ⊢ P : !s -> Γ ⊢ u : P[←t1] -> Γ ⊢ p : Eq A t1 t2
                                 -> Γ ⊢ J A P t1 u t2 p : P[←t2]
 (* this is the only place in the typesystem where computation is mentioned? *)
-| Cnv   : forall Γ M A B s, A ≡ B  -> Γ ⊢ M : A -> Γ ⊢ B : !s -> Γ ⊢ M : B
+| Cnv   : forall Γ M A B s, Betac A B  -> Γ ⊢ M : A -> Γ ⊢ B : !s -> Γ ⊢ M : B
 where "Γ ⊢ t : T" := (typ Γ t T) : UT_scope.
 
 Hint Constructors wf typ.
